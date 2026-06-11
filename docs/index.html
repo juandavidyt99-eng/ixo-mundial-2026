@@ -10,7 +10,8 @@
 <link rel="preconnect" href="https://flagcdn.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Sora:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
@@ -30,15 +31,24 @@ body{
   background:var(--bg); color:var(--txt);
   font-family:'Inter',system-ui,sans-serif; min-height:100vh; overflow-x:hidden;
 }
+/* Noche de estadio: focos, cesped al fondo y grano de transmision */
 body::before{
   content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
   background:
-    radial-gradient(900px 480px at 85% -10%, rgba(16,225,135,.13), transparent 60%),
-    radial-gradient(800px 480px at -10% 12%, rgba(86,168,255,.12), transparent 60%),
-    radial-gradient(700px 500px at 50% 115%, rgba(255,201,77,.07), transparent 60%);
+    conic-gradient(from 166deg at 10% -8%, transparent 0deg, rgba(255,246,205,.09) 8deg, transparent 18deg),
+    conic-gradient(from 194deg at 90% -8%, transparent 0deg, rgba(255,246,205,.08) 8deg, transparent 18deg),
+    conic-gradient(from 180deg at 50% -14%, transparent 0deg, rgba(200,255,190,.05) 10deg, transparent 22deg),
+    radial-gradient(1200px 460px at 50% 118%, rgba(11,74,46,.5), transparent 72%),
+    radial-gradient(900px 480px at 85% -10%, rgba(16,225,135,.10), transparent 60%),
+    radial-gradient(800px 480px at -10% 12%, rgba(86,168,255,.08), transparent 60%);
+}
+body::after{
+  content:""; position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.045;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 .wrap{max-width:1150px;margin:0 auto;padding:0 18px 70px}
 h1,h2,h3{font-family:'Sora',sans-serif}
+.hero h1, .cd-box .n, .vs.score, .premio .money, .bet-cuota, .pod .pc{font-family:'Unbounded','Sora',sans-serif}
 
 /* ---------- HERO ---------- */
 .hero{text-align:center;padding:54px 10px 8px;position:relative}
@@ -348,6 +358,49 @@ footer a{color:var(--muted)}
 .extra-box .v{font-family:'Sora';font-weight:800;font-size:.95rem;margin-top:2px;color:var(--blue)}
 .extra-box .s{font-size:.64rem;color:var(--muted)}
 
+/* ---------- COPA 3D ---------- */
+#trofeo3d{width:170px;height:200px;margin:0 auto;filter:drop-shadow(0 18px 40px rgba(255,201,77,.35))}
+#trofeo3d canvas{display:block}
+
+/* ---------- VOTACION COMUNIDAD ---------- */
+.voto{margin-top:14px;background:var(--bg-soft);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.voto .vt{font-size:.7rem;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;justify-content:space-between}
+.voto-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.voto-btns button{background:var(--card);border:1px solid var(--line);color:var(--txt);border-radius:10px;
+  padding:9px 6px;font-size:.78rem;font-weight:700;cursor:pointer;transition:.15s}
+.voto-btns button:hover{border-color:var(--green)}
+.voto-btns button.votado{background:rgba(16,225,135,.15);border-color:var(--green);color:var(--green)}
+.voto-res{display:flex;height:10px;border-radius:6px;overflow:hidden;margin-top:10px;border:1px solid rgba(255,255,255,.06)}
+.voto-res div{transition:width .6s ease}
+.voto-leyenda{display:flex;justify-content:space-between;font-size:.66rem;color:var(--dim);margin-top:4px}
+
+/* ---------- EN VIVO INTERACTIVO ---------- */
+.match.live{border-color:rgba(255,80,80,.5);box-shadow:0 0 50px rgba(255,80,80,.1)}
+.live-board{background:linear-gradient(135deg,#1a0f12,#241016);border:1px solid rgba(255,80,80,.4);
+  border-radius:14px;padding:16px;margin:14px 0 4px;text-align:center}
+.live-board .lb-score{font-family:'Unbounded';font-size:2.4rem;font-weight:900;color:#fff;letter-spacing:2px}
+.live-board .lb-clock{color:#ff9090;font-weight:800;font-size:.95rem;margin-top:4px;animation:pulse 1.5s infinite}
+.live-board .lb-sub{color:var(--dim);font-size:.7rem;margin-top:6px}
+
+/* ---------- PRESENCIA + CHAT MEDIA ---------- */
+.online-pill{display:inline-flex;align-items:center;gap:7px;background:rgba(16,225,135,.1);
+  border:1px solid rgba(16,225,135,.4);color:var(--green);border-radius:999px;padding:6px 14px;
+  font-size:.78rem;font-weight:800}
+.online-pill .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:pulse 2s infinite}
+.chat-img{max-width:220px;border-radius:10px;margin-top:6px;display:block;cursor:zoom-in}
+.msg audio{margin-top:6px;width:220px;height:36px}
+.chat-tools{display:flex;gap:6px}
+.tool-btn{background:var(--card);border:1px solid var(--line);color:var(--muted);border-radius:11px;
+  width:44px;height:44px;font-size:1.1rem;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center}
+.tool-btn:hover{border-color:var(--green);color:var(--txt)}
+.tool-btn.rec{background:rgba(255,80,80,.18);border-color:#ff5050;color:#ff9090;animation:pulse 1s infinite}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#fff;color:#1f2937;
+  border:0;border-radius:11px;padding:12px;font-weight:700;font-size:.92rem;cursor:pointer;margin-top:14px;font-family:'Inter'}
+.gbtn img{width:20px;height:20px}
+.legal-links{margin-top:10px}
+.legal-links a{color:var(--muted);margin:0 8px;text-decoration:none;border-bottom:1px dotted var(--dim)}
+.legal-links a:hover{color:var(--txt)}
+
 @media(max-width:640px){
   .trow .nm{width:104px;font-size:.8rem}
   .team .tn{font-size:.88rem}
@@ -356,6 +409,7 @@ footer a{color:var(--muted)}
   .pod .nm{font-size:.8rem}
   .pod .pc{font-size:1.2rem}
   nav button{padding:9px 13px;font-size:.8rem}
+  .live-board .lb-score{font-size:1.7rem}
 }
 </style>
 </head>
@@ -363,40 +417,7 @@ footer a{color:var(--muted)}
 <div class="wrap">
 
   <header class="hero">
-    <div class="cup" id="trofeo">
-      <svg width="120" height="150" viewBox="0 0 120 150" fill="none" aria-label="Copa del Mundo">
-        <defs>
-          <linearGradient id="oro" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#fff3c4"/><stop offset="35%" stop-color="#ffd34d"/>
-            <stop offset="70%" stop-color="#d4960a"/><stop offset="100%" stop-color="#a06a00"/>
-          </linearGradient>
-          <linearGradient id="oro2" x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0%" stop-color="#caa028"/><stop offset="50%" stop-color="#ffe9a3"/>
-            <stop offset="100%" stop-color="#b87f06"/>
-          </linearGradient>
-          <radialGradient id="globo" cx="0.35" cy="0.3" r="1">
-            <stop offset="0%" stop-color="#fff7d6"/><stop offset="45%" stop-color="#ffce45"/>
-            <stop offset="100%" stop-color="#9c6c00"/>
-          </radialGradient>
-          <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
-            <feGaussianBlur stdDeviation="6" result="b"/>
-            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-        </defs>
-        <g filter="url(#glow)">
-          <circle cx="60" cy="34" r="24" fill="url(#globo)"/>
-          <path d="M40 22 Q60 30 80 22 M38 34 Q60 42 82 34 M42 46 Q60 52 78 46" stroke="#8a5e00" stroke-width="1.6" fill="none" opacity=".55"/>
-          <path d="M48 12 Q54 20 50 30 Q60 26 64 16 Q70 24 66 32" stroke="#8a5e00" stroke-width="1.4" fill="none" opacity=".45"/>
-          <path d="M44 55 C38 70 44 80 52 88 L68 88 C76 80 82 70 76 55 C70 62 50 62 44 55 Z" fill="url(#oro)"/>
-          <path d="M52 88 C46 96 44 102 47 108 L73 108 C76 102 74 96 68 88 Z" fill="url(#oro2)"/>
-          <ellipse cx="60" cy="112" rx="22" ry="7" fill="url(#oro)"/>
-          <rect x="38" y="116" width="44" height="14" rx="6" fill="#1d4d36"/>
-          <rect x="34" y="128" width="52" height="10" rx="5" fill="#163b2a"/>
-          <text x="60" y="126" text-anchor="middle" font-size="7.5" font-family="Sora,sans-serif" font-weight="800" fill="#ffd34d">IXO 2026</text>
-        </g>
-        <rect id="brillo" x="-30" y="0" width="14" height="150" fill="white" opacity="0.0" transform="skewX(-20)"/>
-      </svg>
-    </div>
+    <div class="cup" id="trofeo"><div id="trofeo3d" aria-label="Copa del Mundo en 3D"></div></div>
     <h1>IXO <span class="grad">Mundial 2026</span></h1>
     <p class="sub">Probabilidades calibradas para los 104 partidos de la Copa del Mundo.
     No es intuición: es un modelo estadístico validado con torneos reales.</p>
@@ -412,7 +433,6 @@ footer a{color:var(--muted)}
       <button data-s="comunidad">💬 Comunidad</button>
       <button data-s="grupos">🏟️ Grupos</button>
       <button data-s="titulo">🏆 Título</button>
-      <button data-s="metodo">📊 Modelo</button>
     </nav>
   </div>
 
@@ -424,7 +444,6 @@ footer a{color:var(--muted)}
   <div id="comunidad" class="section"></div>
   <div id="grupos" class="section"></div>
   <div id="titulo" class="section"></div>
-  <div id="metodo" class="section"></div>
 
   <div class="disclaimer">
     <b>⚠️ Juego responsable (+18):</b> estas probabilidades vienen de un modelo estadístico y
@@ -434,8 +453,15 @@ footer a{color:var(--muted)}
   </div>
 
   <footer>
-    IXO Mundial 2026 · Modelo propietario Elo + Poisson/Dixon-Coles · 47,000+ partidos internacionales (1872–2026)<br>
-    Re-entrenado automáticamente con cada jornada · Cuotas y marcadores en vivo actualizados cada 30 min los días de partido
+    IXO Mundial 2026 · Plataforma informativa y de entretenimiento — <b>no somos casa de apuestas ni recibimos dinero</b><br>
+    Sin afiliación con FIFA™ ni con las selecciones nacionales · Datos en vivo cada 30 min los días de partido
+    <div class="legal-links">
+      <a href="legal.html">Términos y condiciones</a> ·
+      <a href="legal.html#privacidad">Privacidad</a> ·
+      <a href="legal.html#modelo">El modelo y su precisión</a> ·
+      <a href="legal.html#responsable">Juego responsable</a>
+    </div>
+    <div style="margin-top:8px">© 2026 IXO. Todos los derechos reservados.</div>
   </footer>
 </div>
 
@@ -540,8 +566,10 @@ async function load(){
   [MATCHES, TEAMS, GROUPS, META] = await Promise.all(
     ["matches","teams","groups","meta"].map(f=>fetch(`data/${f}.json`).then(r=>r.json())));
   [BETS, LIVE, TRACK] = await Promise.all(["bets","live","track"].map(tryFetch));
-  renderBadges(); renderPartidos(); renderApuestas(); renderGrupos(); renderMetodo();
-  initBot(); initAnimaciones();
+  await initAuth();
+  await loadVotos().catch(()=>{});
+  renderBadges(); renderPartidos(); renderApuestas(); renderGrupos();
+  initBot(); initAnimaciones(); initPresence();
   setInterval(refreshLive, 60000);
 }
 
@@ -586,7 +614,7 @@ function matchCard(m, idx){
       : `<span class="pickpill">⚡ ${pickTxt} · ${pct(m.pick_prob)}</span>`;
   const centro = lv && lv.enVivo ? lv.marcador : (resultado || "VS");
   return `
-  <div class="match" data-i="${idx}" onclick="this.classList.toggle('open')">
+  <div class="match ${lv&&lv.enVivo?"live":""}" data-i="${idx}" onclick="this.classList.toggle('open')">
     <div class="m-head">
       <div class="m-meta"><span class="g">Grupo ${m.grupo}</span><span>📍 ${m.ciudad}</span></div>
       ${estadoPill}
@@ -596,6 +624,12 @@ function matchCard(m, idx){
       <div class="vs ${(resultado||lv&&lv.enVivo)?"score":""}">${centro}</div>
       <div class="team right">${flag(m.visitante)}<div><div class="tn">${nm(m.visitante)}</div><div class="xg">xG ${m.xg_visitante}</div></div></div>
     </div>
+    ${lv&&lv.enVivo?`
+    <div class="live-board" onclick="event.stopPropagation()">
+      <div class="lb-score">${(lv.marcador||"0-0").replace("-"," · ")}</div>
+      <div class="lb-clock">⏱ ${lv.reloj||"en juego"} ${lv.detalle?("· "+lv.detalle):""}</div>
+      <div class="lb-sub">Marcador en vivo · se actualiza solo · vota abajo quién gana 👇</div>
+    </div>`:""}
     <div class="probbar">
       <div class="p-h" style="width:${m.p_local*100}%">${pct(m.p_local)}</div>
       <div class="p-d" style="width:${m.p_empate*100}%">${pct(m.p_empate)}</div>
@@ -622,19 +656,10 @@ function matchCard(m, idx){
         <div class="extra-box"><div class="k">+1.5 / +3.5 goles</div><div class="v">${pct(m.extra.p_over15)} / ${pct(m.extra.p_over35)}</div>
           <div class="s">prob. del modelo</div></div>
       </div>`:""}
-      ${m.ticket && m.ticket.selecciones.length?`
-      <div class="ticket" onclick="event.stopPropagation()">
-        <div class="th"><span>🎟️ APUESTA MUNDIAL</span><span style="font-size:.68rem">IXO MODELO</span></div>
-        <div class="tb">
-          <div style="font-family:'Inter';font-size:.72rem;color:#6b6450;margin-bottom:6px">${nm(m.local)} vs ${nm(m.visitante)} · ${fmtS(m.fecha)}</div>
-          ${m.ticket.selecciones.map(s=>`<div class="sel"><span>${s.mercado}<br><b>${s.seleccion}</b></span><span class="cu">${pct(s.p)}<br>@${s.cuota_justa}</span></div>`).join("")}
-        </div>
-        <div class="tf"><span style="font-size:.74rem">CUOTA JUSTA COMBINADA</span><span class="total">${m.ticket.cuota_combinada}</span></div>
-        <div class="legal">Probabilidad de acertar todo: ${pct(m.ticket.p_combinada)} · Esquinas/tarjetas/disparos son estimaciones derivadas del xG · +18 juego responsable</div>
-      </div>`:""}
-      ${cuotaPick?`<p style="color:var(--dim);font-size:.76rem;margin-top:12px">💡 Solo hay <b style="color:var(--green)">valor</b> apostando al pick si el mercado paga más de <b style="color:var(--txt)">${cuotaPick}</b>.</p>`:""}
+      ${cuotaPick?`<p style="color:var(--dim);font-size:.76rem;margin-top:12px">💡 El ticket de apuestas de este partido está en la pestaña <b style="color:var(--green)">🎯 Apuestas</b>.</p>`:""}
     </div>
-    <div class="expand-hint">▾ toca para ver todos los mercados y el ticket</div>
+    ${votoWidget(m)}
+    <div class="expand-hint">▾ toca para ver los datos completos del partido</div>
   </div>`;
 }
 
@@ -667,11 +692,17 @@ function renderPartidos(){
     ${days.map(d=>`<button class="${fDay===d?"on":""}" data-d="${d}">${d===hoy?"🔴 HOY · ":""}${fmtS(d)}</button>`).join("")}
   </div>`;
 
+  const vivos = visibles.filter(m=>{ const lv = liveInfo(m.fecha, m.local, m.visitante); return lv && lv.enVivo; });
+  if (vivos.length){
+    html += `<h2 class="day">🔴 EN VIVO AHORA MISMO</h2>`;
+    vivos.forEach((m,i)=>{ html += matchCard(m, "lv"+i); });
+  }
+  const resto = visibles.filter(m=>!vivos.includes(m));
   if (!visibles.length){
     html += `<div class="loading">No hay partidos con esos filtros 🤷</div>`;
   } else {
     const byDay = {};
-    visibles.forEach(m=>(byDay[m.fecha]=byDay[m.fecha]||[]).push(m));
+    resto.forEach(m=>(byDay[m.fecha]=byDay[m.fecha]||[]).push(m));
     Object.keys(byDay).sort().forEach(d=>{
       html += `<h2 class="day">${fmtL(d)} ${d===hoy?'<span class="today">EN JUEGO HOY</span>':""}</h2>`;
       byDay[d].forEach((m,i)=>{ html += matchCard(m, i); });
@@ -731,13 +762,7 @@ function renderApuestas(){
     </div>`;
   }
 
-  if (!partidos.length){
-    html += `<div class="loading">Las casas aún no publican cuotas para los próximos partidos.<br>
-      Vuelve más cerca del día del partido — se actualizan solas. ⏳</div>`;
-    el.innerHTML = html; return;
-  }
-
-  const fijas = BETS.fijas || [];
+  const fijas = (BETS && BETS.fijas) || [];
   if (fijas.length){
     html += `<h2 class="day">🔥 Las fijas del momento</h2>`;
     fijas.forEach(f=>{
@@ -753,18 +778,28 @@ function renderApuestas(){
     });
   }
 
-  html += `<h2 class="day">📋 Todas las apuestas en rango, partido por partido</h2>`;
-  partidos.sort((a,b)=>a.fecha.localeCompare(b.fecha)).forEach(b=>{
-    const lv = liveInfo(b.fecha, b.local, b.visitante);
-    html += `
-    <div class="bet-match">
-      <div class="bm-head">
-        ${flag(b.local,40)}<span class="t">${nm(b.local)} vs ${nm(b.visitante)}</span>${flag(b.visitante,40)}
-        ${lv&&lv.enVivo?`<span class="livepill">● EN VIVO ${lv.reloj||""} · ${lv.marcador}</span>`:""}
-        <span class="meta">${fmtL(b.fecha)} · ${b.casas} casas consultadas</span>
-      </div>
-      ${b.apuestas.map(betRow).join("")}
-    </div>`;
+  // todos los partidos proximos, por dia: cuotas reales (si las casas ya publicaron) + ticket del modelo
+  const hoy = hoyStr();
+  const lista = MATCHES.filter(m=>!m.resultado && m.fecha >= hoy).slice(0, 30);
+  const porDia = {};
+  lista.forEach(m=>(porDia[m.fecha]=porDia[m.fecha]||[]).push(m));
+  Object.keys(porDia).sort().forEach(d=>{
+    html += `<h2 class="day">${fmtL(d)} ${d===hoy?'<span class="today">HOY</span>':""}</h2>`;
+    porDia[d].forEach(m=>{
+      const k = keyOf(m);
+      const b = BETS && BETS.por_partido && BETS.por_partido[k];
+      const lv = liveInfo(m.fecha, m.local, m.visitante);
+      html += `
+      <div class="bet-match">
+        <div class="bm-head">
+          ${flag(m.local,40)}<span class="t">${nm(m.local)} vs ${nm(m.visitante)}</span>${flag(m.visitante,40)}
+          ${lv&&lv.enVivo?`<span class="livepill">● EN VIVO ${lv.reloj||""} · ${lv.marcador}</span>`:""}
+          <span class="meta">${b?b.casas+" casas consultadas":"las casas aún no publican cuotas"}</span>
+        </div>
+        ${b?b.apuestas.map(betRow).join(""):""}
+        ${ticketHTML(m)}
+      </div>`;
+    });
   });
 
   html += `<p style="color:var(--dim);font-size:.76rem;margin-top:14px">⚠️ El valor (+EV) se calcula como
@@ -945,6 +980,10 @@ async function renderPolla(){
       <input id="reg-nick" maxlength="20" placeholder="Tu nickname (ej. ElTigreFalcao)">
       <input id="reg-email" type="email" maxlength="80" placeholder="tu@correo.com">
       <button class="btn" id="reg-btn" style="margin-top:14px;width:100%">Entrar a jugar 🚀</button>
+      <button class="gbtn" onclick="loginGoogle()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="">
+        Entrar con Google
+      </button>
     </div>`;
     el.innerHTML = html;
     document.getElementById("reg-btn").addEventListener("click", ()=>{
@@ -1031,22 +1070,35 @@ function msgHTML(m){
   const mio = m.nickname === getNick();
   const hora = new Date(m.creado).toLocaleTimeString("es-CO",{hour:"2-digit",minute:"2-digit"});
   const safe = (m.texto||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-  return `<div class="msg ${mio?"mio":""}"><div class="who">${m.nickname}</div><div class="txt">${safe}</div><div class="when">${hora}</div></div>`;
+  let media = "";
+  if (m.media_url && m.media_tipo === "imagen")
+    media = `<a href="${m.media_url}" target="_blank" rel="noopener"><img class="chat-img" loading="lazy" src="${m.media_url}" alt="apuesta"></a>`;
+  if (m.media_url && m.media_tipo === "audio")
+    media = `<audio controls preload="none" src="${m.media_url}"></audio>`;
+  return `<div class="msg ${mio?"mio":""}"><div class="who">${m.nickname}</div><div class="txt">${safe}</div>${media}<div class="when">${hora}</div></div>`;
 }
 
 async function renderComunidad(){
   const el = document.getElementById("comunidad");
+  const conNick = !!getNick();
   el.innerHTML = `
   <div class="card" style="margin-bottom:14px">
-    <h3>💬 Comunidad mundialista</h3>
-    <p>Comparte tus apuestas, celebra los goles y habla del Mundial en tiempo real. Respeto ante todo —
-    nada de datos personales ni promesas de ganancias. Con un click en 🎟️ de cualquier ticket lo compartes aquí.</p>
+    <h3 style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">💬 Comunidad mundialista
+      <span class="online-pill"><span class="dot"></span><span class="online-n">${ONLINE}</span>&nbsp;en línea</span>
+    </h3>
+    <p>Habla del Mundial en tiempo real, manda <b>📸 la foto de tu apuesta</b> o una <b>🎙️ nota de voz</b>.
+    Respeto ante todo — nada de datos personales ni promesas de ganancias.</p>
   </div>
   <div class="chat-box">
     <div class="chat-scroll" id="chat-scroll"><div class="loading">Cargando chat…</div></div>
     <div class="chat-input">
-      <input id="chat-txt" maxlength="280" placeholder="${getNick()?"Escribe un mensaje…":"Primero elige tu nickname en la pestaña Polla"}" ${getNick()?"":"disabled"}>
-      <button class="btn" id="chat-send" ${getNick()?"":"disabled"}>Enviar</button>
+      <div class="chat-tools">
+        <button class="tool-btn" title="Enviar foto de tu apuesta" ${conNick?"":"disabled"} onclick="document.getElementById('chat-foto').click()">📸</button>
+        <input id="chat-foto" type="file" accept="image/*" style="display:none" onchange="enviarFoto(this)">
+        <button class="tool-btn" id="chat-audio" title="Nota de voz" ${conNick?"":"disabled"} onclick="toggleAudio(this)">🎙️</button>
+      </div>
+      <input id="chat-txt" maxlength="280" placeholder="${conNick?"Escribe un mensaje…":"Primero elige tu nickname en la pestaña Polla"}" ${conNick?"":"disabled"}>
+      <button class="btn" id="chat-send" ${conNick?"":"disabled"}>Enviar</button>
     </div>
   </div>`;
 
@@ -1137,12 +1189,152 @@ function initBot(){
   document.getElementById("bot-q").addEventListener("keydown", e=>{ if(e.key==="Enter") botPreguntar(); });
 }
 
+/* ============ TICKET (Apuestas) ============ */
+function ticketHTML(m){
+  if (!m.ticket || !m.ticket.selecciones.length) return "";
+  return `
+  <div class="ticket" onclick="event.stopPropagation()">
+    <div class="th"><span>🎟️ APUESTA MUNDIAL</span><span style="font-size:.68rem">IXO MODELO</span></div>
+    <div class="tb">
+      <div style="font-family:'Inter';font-size:.72rem;color:#6b6450;margin-bottom:6px">${nm(m.local)} vs ${nm(m.visitante)} · ${fmtS(m.fecha)}</div>
+      ${m.ticket.selecciones.map(s=>`<div class="sel"><span>${s.mercado}<br><b>${s.seleccion}</b></span><span class="cu">${pct(s.p)}<br>@${s.cuota_justa}</span></div>`).join("")}
+    </div>
+    <div class="tf"><span style="font-size:.74rem">CUOTA JUSTA COMBINADA</span><span class="total">${m.ticket.cuota_combinada}</span></div>
+    <div class="legal">Probabilidad de acertar todo: ${pct(m.ticket.p_combinada)} · Esquinas/tarjetas/disparos: estimaciones derivadas del xG · +18 juego responsable</div>
+  </div>`;
+}
+
+/* ============ VOTACION POR PARTIDO ============ */
+let VOTOS = {};   // match_key -> {local, empate, visitante}
+const voterId = () => {
+  let v = localStorage.getItem("ixo_uid");
+  if (!v){ v = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now()); localStorage.setItem("ixo_uid", v); }
+  return v;
+};
+
+async function loadVotos(){
+  const { data } = await db.from("votos_partido").select("match_key,voto");
+  VOTOS = {};
+  (data||[]).forEach(r=>{
+    VOTOS[r.match_key] = VOTOS[r.match_key] || {local:0, empate:0, visitante:0};
+    VOTOS[r.match_key][r.voto]++;
+  });
+}
+
+function votoWidget(m){
+  const k = keyOf(m);
+  const v = VOTOS[k] || {local:0, empate:0, visitante:0};
+  const total = v.local + v.empate + v.visitante;
+  const miVoto = localStorage.getItem("ixo_voto_"+k);
+  const p = x => total ? Math.round(x/total*100) : 33;
+  return `
+  <div class="voto" onclick="event.stopPropagation()">
+    <div class="vt"><span>🗳️ ¿Quién gana? — la voz de la tribuna</span><span>${total} voto${total===1?"":"s"}</span></div>
+    <div class="voto-btns">
+      <button class="${miVoto==="local"?"votado":""}" onclick="votar('${k.replace(/'/g,"\\'")}','local',this)">${nm(m.local)}</button>
+      <button class="${miVoto==="empate"?"votado":""}" onclick="votar('${k.replace(/'/g,"\\'")}','empate',this)">Empate</button>
+      <button class="${miVoto==="visitante"?"votado":""}" onclick="votar('${k.replace(/'/g,"\\'")}','visitante',this)">${nm(m.visitante)}</button>
+    </div>
+    ${total?`
+    <div class="voto-res">
+      <div class="p-h" style="width:${p(v.local)}%"></div>
+      <div class="p-d" style="width:${p(v.empate)}%"></div>
+      <div class="p-a" style="width:${p(v.visitante)}%"></div>
+    </div>
+    <div class="voto-leyenda"><span>${p(v.local)}%</span><span>${p(v.empate)}%</span><span>${p(v.visitante)}%</span></div>`:""}
+  </div>`;
+}
+
+async function votar(k, voto, btn){
+  if (localStorage.getItem("ixo_voto_"+k)){ return; }
+  const { error } = await db.from("votos_partido").insert({match_key:k, voter:voterId(), voto});
+  if (error){ if (!error.message.includes("duplicate")) alert("No se pudo votar: "+error.message); return; }
+  localStorage.setItem("ixo_voto_"+k, voto);
+  VOTOS[k] = VOTOS[k] || {local:0, empate:0, visitante:0};
+  VOTOS[k][voto]++;
+  confetti({particleCount:30, spread:40, origin:{y:.8}, scalar:.7});
+  renderPartidos();
+}
+
+/* ============ PRESENCIA (usuarios conectados) ============ */
+let ONLINE = 1;
+function initPresence(){
+  try{
+    const canal = db.channel("online", {config:{presence:{key: voterId()}}});
+    canal.on("presence", {event:"sync"}, ()=>{
+      ONLINE = Math.max(1, Object.keys(canal.presenceState()).length);
+      document.querySelectorAll(".online-n").forEach(e=>e.textContent=ONLINE);
+    }).subscribe(status=>{ if (status==="SUBSCRIBED") canal.track({t: Date.now()}); });
+  }catch(e){}
+}
+
+/* ============ GOOGLE LOGIN (Supabase Auth) ============ */
+async function initAuth(){
+  try{
+    const { data } = await db.auth.getSession();
+    const u = data && data.session && data.session.user;
+    if (u && !localStorage.getItem("ixo_nick")){
+      const nombre = (u.user_metadata && (u.user_metadata.full_name || u.user_metadata.name)) || u.email.split("@")[0];
+      localStorage.setItem("ixo_nick", nombre.slice(0,20));
+      localStorage.setItem("ixo_email", u.email || "");
+      localStorage.setItem("ixo_google", "1");
+    }
+  }catch(e){}
+}
+async function loginGoogle(){
+  const { error } = await db.auth.signInWithOAuth({provider:"google",
+    options:{redirectTo: location.origin + location.pathname}});
+  if (error) alert("Google login aún no está activo: " + error.message);
+}
+
+/* ============ CHAT: audio y fotos ============ */
+let mediaRec = null, mediaChunks = [];
+async function subirMedia(blob, ext, tipo){
+  const ruta = `${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+  const { error } = await db.storage.from("media").upload(ruta, blob, {contentType: blob.type});
+  if (error) throw new Error(error.message);
+  return db.storage.from("media").getPublicUrl(ruta).data.publicUrl;
+}
+
+async function enviarFoto(input){
+  const f = input.files && input.files[0];
+  if (!f) return;
+  if (f.size > 5*1024*1024){ alert("Máximo 5 MB"); return; }
+  try{
+    const url = await subirMedia(f, (f.name.split(".").pop()||"jpg").toLowerCase(), "imagen");
+    await db.from("chat_mensajes").insert({nickname:getNick(), texto:"📸 mi apuesta", media_url:url, media_tipo:"imagen"});
+  }catch(e){ alert("No se pudo subir: "+e.message); }
+  input.value = "";
+}
+
+async function toggleAudio(btn){
+  if (mediaRec && mediaRec.state === "recording"){ mediaRec.stop(); return; }
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    mediaChunks = [];
+    const mime = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/mp4";
+    mediaRec = new MediaRecorder(stream, {mimeType:mime});
+    mediaRec.ondataavailable = e=>mediaChunks.push(e.data);
+    mediaRec.onstop = async ()=>{
+      btn.classList.remove("rec"); btn.textContent = "🎙️";
+      stream.getTracks().forEach(t=>t.stop());
+      const blob = new Blob(mediaChunks, {type:mime});
+      if (blob.size < 1200) return;
+      if (blob.size > 5*1024*1024){ alert("Audio muy largo (máx 5 MB)"); return; }
+      try{
+        const url = await subirMedia(blob, mime.includes("webm")?"webm":"m4a", "audio");
+        await db.from("chat_mensajes").insert({nickname:getNick(), texto:"🎙️ nota de voz", media_url:url, media_tipo:"audio"});
+      }catch(e){ alert("No se pudo enviar el audio: "+e.message); }
+    };
+    mediaRec.start();
+    btn.classList.add("rec"); btn.textContent = "⏹";
+  }catch(e){ alert("Necesito permiso del micrófono para grabar 🎙️"); }
+}
+
 /* ============ animaciones (GSAP) ============ */
 function initAnimaciones(){
   if (typeof gsap === "undefined") return;
-  gsap.to("#trofeo svg", {y:-10, duration:1.8, yoyo:true, repeat:-1, ease:"sine.inOut"});
-  gsap.fromTo("#trofeo svg", {rotate:-2}, {rotate:2, duration:2.6, yoyo:true, repeat:-1, ease:"sine.inOut", transformOrigin:"50% 90%"});
-  gsap.to("#brillo", {x:170, opacity:.5, duration:1.6, repeat:-1, repeatDelay:2.6, ease:"power2.inOut"});
+  gsap.to("#trofeo3d", {y:-10, duration:1.9, yoyo:true, repeat:-1, ease:"sine.inOut"});
   gsap.from(".cd-box", {y:18, opacity:0, stagger:.08, duration:.6, ease:"back.out(1.6)"});
 }
 
@@ -1161,6 +1353,104 @@ document.querySelectorAll("#tabs button").forEach(b=>b.addEventListener("click",
 load().catch(e=>{
   document.getElementById("partidos").innerHTML=`<div class="loading">Error cargando datos: ${e}</div>`;
 });
+</script>
+
+<script type="module">
+/* Copa 3D: oro fisico renderizado en tiempo real (Three.js) */
+try {
+  const THREE = await import("three");
+  const { RoomEnvironment } = await import("three/addons/environments/RoomEnvironment.js");
+
+  const cont = document.getElementById("trofeo3d");
+  const W = 170, H = 200;
+  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  renderer.setSize(W, H);
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
+  cont.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+  const cam = new THREE.PerspectiveCamera(33, W/H, 0.1, 100);
+  cam.position.set(0, 1.1, 7.2);
+  cam.lookAt(0, 0.9, 0);
+
+  const oro = new THREE.MeshPhysicalMaterial({
+    color: 0xffc14a, metalness: 1, roughness: 0.16,
+    clearcoat: 0.6, clearcoatRoughness: 0.25, envMapIntensity: 1.5,
+  });
+  const malaquita = new THREE.MeshPhysicalMaterial({
+    color: 0x0d4a32, metalness: 0.15, roughness: 0.32,
+    clearcoat: 0.9, clearcoatRoughness: 0.15, envMapIntensity: 0.9,
+  });
+
+  const grupo = new THREE.Group();
+
+  // silueta torneada inspirada en un trofeo clasico: base ancha, dos anillos, columna que se abre
+  const perfil = [
+    [0.00, 0.00],[1.05, 0.00],[1.05, 0.16],[0.92, 0.20],[0.92, 0.34],[0.78, 0.38],
+    [0.62, 0.45],[0.48, 0.55],[0.36, 0.72],[0.30, 0.95],[0.33, 1.18],[0.42, 1.36],
+    [0.36, 1.50],[0.28, 1.66],[0.26, 1.86],[0.32, 2.06],[0.46, 2.24],[0.62, 2.38],
+    [0.70, 2.50],[0.62, 2.58],[0.42, 2.62],[0.20, 2.64],[0.00, 2.65],
+  ].map(([x,y]) => new THREE.Vector2(x, y));
+  const cuerpo = new THREE.Mesh(new THREE.LatheGeometry(perfil, 96), oro);
+  grupo.add(cuerpo);
+
+  // globo terraqueo dorado en la cima
+  const globo = new THREE.Mesh(new THREE.SphereGeometry(0.78, 64, 48), oro);
+  globo.position.y = 3.28;
+  grupo.add(globo);
+
+  // meridianos sutiles (continentes estilizados)
+  const lineasMat = new THREE.MeshPhysicalMaterial({
+    color: 0xb8860b, metalness: 1, roughness: 0.45, envMapIntensity: 1.0,
+  });
+  for (let i = 0; i < 3; i++){
+    const anillo = new THREE.Mesh(new THREE.TorusGeometry(0.785, 0.012, 8, 80), lineasMat);
+    anillo.position.y = 3.28;
+    anillo.rotation.x = Math.PI/2;
+    anillo.rotation.y = i * Math.PI/3;
+    anillo.rotation.z = i * 0.5;
+    grupo.add(anillo);
+  }
+
+  // doble base de malaquita verde (como el trofeo real)
+  const base1 = new THREE.Mesh(new THREE.CylinderGeometry(1.06, 1.12, 0.22, 64), malaquita);
+  base1.position.y = -0.11;
+  const base2 = new THREE.Mesh(new THREE.CylinderGeometry(1.18, 1.24, 0.2, 64), malaquita);
+  base2.position.y = -0.32;
+  grupo.add(base1, base2);
+
+  // dos bandas doradas en la base
+  for (const y of [-0.11, -0.32]){
+    const banda = new THREE.Mesh(new THREE.TorusGeometry(y===-0.11?1.09:1.21, 0.02, 8, 80), oro);
+    banda.rotation.x = Math.PI/2;
+    banda.position.y = y + 0.1;
+    grupo.add(banda);
+  }
+
+  grupo.position.y = -1.35;
+  grupo.scale.setScalar(0.95);
+  scene.add(grupo);
+
+  const luz = new THREE.SpotLight(0xfff2cc, 60, 30, 0.5, 0.6);
+  luz.position.set(3, 7, 5);
+  scene.add(luz);
+
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function animar(t){
+    if (!reduceMotion) grupo.rotation.y = t * 0.0005;
+    renderer.render(scene, cam);
+    requestAnimationFrame(animar);
+  }
+  requestAnimationFrame(animar);
+} catch (e) {
+  const c = document.getElementById("trofeo3d");
+  if (c) c.innerHTML = '<div style="font-size:4.5rem;line-height:200px">🏆</div>';
+}
 </script>
 </body>
 </html>
