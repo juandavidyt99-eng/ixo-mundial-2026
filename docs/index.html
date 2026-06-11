@@ -775,11 +775,19 @@ async function refreshLive(){
   }
 }
 
+const ESTADOS_FIN = ["STATUS_FINAL","STATUS_FULL_TIME","STATUS_FULL_PEN","STATUS_FULL_AET",
+  "STATUS_AET","STATUS_PEN","STATUS_CANCELED","STATUS_POSTPONED","STATUS_ABANDONED","STATUS_FORFEIT"];
+function esFinal(estado){
+  if (!estado) return false;
+  if (ESTADOS_FIN.includes(estado)) return true;
+  return /FULL_TIME|FINAL|_AET|_PEN|FT/.test(estado);   // cubre variantes del feed
+}
 function liveInfo(fecha, local, visitante){
   const lv = LIVE && LIVE.partidos && LIVE.partidos[`${fecha}|${local}|${visitante}`];
   if (!lv) return null;
-  const enVivo = !["STATUS_SCHEDULED","STATUS_FINAL","STATUS_CANCELED","STATUS_POSTPONED"].includes(lv.estado);
-  return {...lv, enVivo, final: lv.estado === "STATUS_FINAL"};
+  const fin = esFinal(lv.estado);
+  const enVivo = !fin && lv.estado !== "STATUS_SCHEDULED";
+  return {...lv, enVivo, final: fin};
 }
 
 function renderBadges(){
@@ -865,8 +873,8 @@ function statBar(label, a, b){
 /* minuto que avanza en el cliente (el feed solo refresca cada ~30 min) */
 function minutoVivo(m, lv){
   const est = (lv && lv.estado) || "";
-  if (est==="STATUS_FINAL") return "Final";
-  if (est==="STATUS_HALFTIME") return "Entretiempo";
+  if (esFinal(est)) return "Final";
+  if (est==="STATUS_HALFTIME" || est==="STATUS_HALF_TIME") return "Entretiempo";
   if (m.hora_utc){
     const elapsed = Math.floor((Date.now()-new Date(m.hora_utc))/60000);
     if (elapsed>=0){
