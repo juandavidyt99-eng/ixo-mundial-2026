@@ -652,6 +652,7 @@ async function load(){
   [MATCHES, TEAMS, GROUPS, META] = await Promise.all(
     ["matches","teams","groups","meta"].map(f=>fetch(`data/${f}.json`).then(r=>r.json())));
   [BETS, LIVE, TRACK] = await Promise.all(["bets","live","track"].map(tryFetch));
+  const liveSupa = await fetchLiveSupa(); if (liveSupa) LIVE = liveSupa;   // estado en vivo al instante
   await initAuth();
   await loadVotos().catch(()=>{});
   computeNext();
