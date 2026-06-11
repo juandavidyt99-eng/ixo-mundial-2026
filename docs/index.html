@@ -362,6 +362,22 @@ let fDay="all", fGroup="all", fText="";
 
 const tryFetch = f => fetch(`data/${f}.json?t=${Date.now()}`).then(r=>r.ok?r.json():null).catch(()=>null);
 
+/* Supabase: lectura publica instantanea del estado en vivo (solo-lectura por RLS) */
+const SUPA_URL = "https://bbpqegswtxkjltznmzyz.supabase.co";
+const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJicHFlZ3N3dHhramx0em5tenl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMzgxNTQsImV4cCI6MjA5NjcxNDE1NH0.bOz3INh3G2SqRkqdSjyUMQneOQLTRPfY52Fb2FJ2Qtg";
+async function fetchLiveSupa(){
+  try{
+    const r = await fetch(`${SUPA_URL}/rest/v1/live_estado?select=key,estado,marcador,reloj`,
+      {headers:{apikey:SUPA_KEY, Authorization:`Bearer ${SUPA_KEY}`}});
+    if (!r.ok) return null;
+    const rows = await r.json();
+    if (!rows.length) return null;
+    const partidos = {};
+    rows.forEach(x=>partidos[x.key]={estado:x.estado, marcador:x.marcador, reloj:x.reloj});
+    return {actualizado:"supabase", partidos};
+  }catch(e){ return null; }
+}
+
 async function load(){
   [MATCHES, TEAMS, GROUPS, META] = await Promise.all(
     ["matches","teams","groups","meta"].map(f=>fetch(`data/${f}.json`).then(r=>r.json())));
@@ -371,7 +387,7 @@ async function load(){
 }
 
 async function refreshLive(){
-  const nuevo = await tryFetch("live");
+  const nuevo = (await fetchLiveSupa()) || (await tryFetch("live"));
   if (!nuevo) return;
   const cambio = JSON.stringify(nuevo) !== JSON.stringify(LIVE);
   LIVE = nuevo;
