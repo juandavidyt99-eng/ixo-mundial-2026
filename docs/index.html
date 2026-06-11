@@ -1072,7 +1072,9 @@ function renderApuestas(){
     </div>`;
   }
 
-  const fijas = (BETS && BETS.fijas) || [];
+  // solo apuestas de partidos que aún NO empiezan (los ya jugados se quitan)
+  const abiertasKeys = new Set(partidosAbiertos().map(keyOf));
+  const fijas = ((BETS && BETS.fijas) || []).filter(f=>abiertasKeys.has(`${f.fecha}|${f.local}|${f.visitante}`));
   if (fijas.length){
     html += `<h2 class="day">🔥 Las fijas del momento</h2>`;
     fijas.forEach(f=>{
@@ -1088,9 +1090,13 @@ function renderApuestas(){
     });
   }
 
-  // todos los partidos proximos, por dia: cuotas reales (si las casas ya publicaron) + ticket del modelo
+  // todos los partidos que aún NO empiezan, por dia: cuotas reales + tickets del modelo
   const hoy = hoyStr();
-  const lista = MATCHES.filter(m=>!m.resultado && m.fecha >= hoy).slice(0, 30);
+  const lista = partidosAbiertos().slice(0, 30);
+  if (!lista.length)
+    html += `<p style="color:var(--muted);text-align:center;padding:34px 10px;font-size:.9rem">
+      ⚽ No hay partidos próximos para apostar ahora mismo.<br>
+      <span style="color:var(--dim);font-size:.82rem">Los partidos que ya empezaron o terminaron se quitan solos; las nuevas cuotas aparecen cuando se acerca el siguiente partido.</span></p>`;
   const porDia = {};
   lista.forEach(m=>(porDia[m.fecha]=porDia[m.fecha]||[]).push(m));
   Object.keys(porDia).sort().forEach(d=>{
@@ -1267,11 +1273,12 @@ const getNick = () => localStorage.getItem("ixo_nick") || "";
 function keyOf(m){ return `${m.fecha}|${m.local}|${m.visitante}`; }
 
 function partidosAbiertos(){
-  const hoy = hoyStr();
+  const hoy = hoyStr(), now = new Date();
   return MATCHES.filter(m=>{
-    if (m.resultado) return false;
+    if (m.resultado) return false;                               // ya tiene resultado final
     const lv = liveInfo(m.fecha, m.local, m.visitante);
-    if (lv && (lv.enVivo || lv.final)) return false;
+    if (lv && (lv.enVivo || lv.final)) return false;             // en juego o terminado
+    if (m.hora_utc && new Date(m.hora_utc) <= now) return false; // ya pasó la hora de inicio
     return m.fecha >= hoy;
   });
 }
