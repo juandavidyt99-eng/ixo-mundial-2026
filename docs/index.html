@@ -410,6 +410,23 @@ footer a{color:var(--muted)}
 .ls-score b{font-family:'Unbounded';font-size:1.7rem;color:#fff;white-space:nowrap}
 .ls-score b span{color:var(--dim)}
 .ls-min{text-align:center;color:#ff9090;font-weight:800;font-size:.74rem;margin-top:5px;animation:pulse 1.6s infinite}
+.livedot{color:#ff5050}
+/* linea de tiempo de goles y tarjetas */
+.tl-title{font-size:.74rem;color:var(--gold);font-weight:700;margin:14px 0 8px}
+.timeline{display:flex;flex-direction:column;gap:5px}
+.tl-row{display:flex;align-items:center;gap:9px;font-size:.8rem;background:var(--card);
+  border:1px solid var(--line);border-radius:9px;padding:6px 11px}
+.tl-row.v{flex-direction:row-reverse;text-align:right}
+.tl-row .tl-min{font-family:'Sora';font-weight:800;color:var(--muted);min-width:40px}
+.tl-row .tl-ic{font-size:.95rem}
+.tl-row .tl-who{flex:1;color:var(--txt);font-weight:600}
+@media(max-width:560px){
+  .live-stats{padding:12px}
+  .ls-row{grid-template-columns:38px 1fr 38px;gap:6px}
+  .mk-grid{grid-template-columns:1fr 1fr}
+  .tickets-row .ticket{min-width:100%;max-width:100%}
+  .tl-row{font-size:.76rem}
+}
 
 /* ---------- MERCADOS + TICKETS MULTIPLES (Apuestas) ---------- */
 .mk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:4px 0 12px}
@@ -625,6 +642,15 @@ function tickCountdown(){
 }
 setInterval(tickCountdown, 1000); tickCountdown();
 
+/* el minuto de los partidos en vivo avanza en el cliente (el feed refresca cada ~30 min) */
+function tickLiveMin(){
+  document.querySelectorAll(".js-min").forEach(el=>{
+    if (!el.dataset.ko) return;
+    el.textContent = minutoVivo({hora_utc:el.dataset.ko}, {estado:el.dataset.estado});
+  });
+}
+setInterval(tickLiveMin, 15000);
+
 /* ============ estado y carga ============ */
 let MATCHES=[], TEAMS={}, GROUPS={}, META={};
 let BETS=null, LIVE=null, TRACK=null;
@@ -637,32 +663,107 @@ const SUPA_URL = "https://bbpqegswtxkjltznmzyz.supabase.co";
 const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJicHFlZ3N3dHhramx0em5tenl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMzgxNTQsImV4cCI6MjA5NjcxNDE1NH0.bOz3INh3G2SqRkqdSjyUMQneOQLTRPfY52Fb2FJ2Qtg";
 async function fetchLiveSupa(){
   try{
-    const r = await fetch(`${SUPA_URL}/rest/v1/live_estado?select=key,estado,marcador,reloj`,
+    const r = await fetch(`${SUPA_URL}/rest/v1/live_estado?select=key,estado,marcador,reloj,detalle,stats,eventos`,
       {headers:{apikey:SUPA_KEY, Authorization:`Bearer ${SUPA_KEY}`}});
     if (!r.ok) return null;
     const rows = await r.json();
     if (!rows.length) return null;
     const partidos = {};
-    rows.forEach(x=>partidos[x.key]={estado:x.estado, marcador:x.marcador, reloj:x.reloj});
+    rows.forEach(x=>partidos[x.key]={estado:x.estado, marcador:x.marcador, reloj:x.reloj,
+      detalle:x.detalle, stats:x.stats, eventos:x.eventos});
     return {actualizado:"supabase", partidos};
   }catch(e){ return null; }
+}
+
+/* ESPN: estadísticas REALES en vivo, directo desde el navegador (API pública, CORS abierto) */
+const ESPN_ALIAS = {"Czechia":"Czech Republic","Korea Republic":"South Korea","IR Iran":"Iran",
+  "Turkiye":"Turkey","Türkiye":"Turkey","Curacao":"Curaçao","Cote d'Ivoire":"Ivory Coast",
+  "Côte d'Ivoire":"Ivory Coast","Congo DR":"DR Congo","Cabo Verde":"Cape Verde","USA":"United States"};
+const stripAcc = s => (s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim();
+function espnDatesLive(){
+  const now = Date.now(), dates = new Set();
+  MATCHES.forEach(m=>{
+    if (!m.hora_utc) return;
+    const ko = new Date(m.hora_utc).getTime();
+    if (now > ko-10*60000 && now < ko+175*60000){           // ventana en la que puede estar vivo
+      const et = new Date(ko-4*3600e3);                      // ESPN agrupa por fecha del Este (EDT)
+      dates.add(et.toISOString().slice(0,10).replace(/-/g,""));
+    }
+  });
+  return [...dates];
+}
+async function fetchEspnLive(){
+  const dates = espnDatesLive();
+  if (!dates.length) return null;
+  const partidos = {};
+  for (const d of dates){
+    try{
+      const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${d}`);
+      if (!r.ok) continue;
+      const j = await r.json();
+      (j.events||[]).forEach(e=>{
+        const comp = e.competitions && e.competitions[0]; if (!comp) return;
+        const cs = comp.competitors||[];
+        const home = cs.find(c=>c.homeAway==="home"), away = cs.find(c=>c.homeAway==="away");
+        if (!home || !away) return;
+        const H = ESPN_ALIAS[home.team.displayName]||home.team.displayName;
+        const A = ESPN_ALIAS[away.team.displayName]||away.team.displayName;
+        const m = MATCHES.find(x=>(stripAcc(x.local)===stripAcc(H)&&stripAcc(x.visitante)===stripAcc(A))
+                              || (stripAcc(x.local)===stripAcc(A)&&stripAcc(x.visitante)===stripAcc(H)));
+        if (!m) return;
+        const flip = stripAcc(m.local)!==stripAcc(H);
+        const stp = (comp.status&&comp.status.type)||{}, state = stp.state;
+        const estado = state==="post"?"STATUS_FINAL":state==="pre"?"STATUS_SCHEDULED":(stp.name||"STATUS_IN_PROGRESS");
+        const sm = c=>{const o={};(c.statistics||[]).forEach(s=>o[s.name]=parseFloat(s.displayValue));return o;};
+        const sh = sm(home), sa = sm(away), num=(o,k)=>isNaN(o[k])?0:o[k];
+        const side={}; side[home.id]="home"; side[away.id]="away";
+        const yc={home:0,away:0}, rc={home:0,away:0}, eventos=[];
+        (comp.details||[]).forEach(dt=>{
+          const t=(dt.type&&dt.type.text)||"", s=side[dt.team&&dt.team.id];
+          const mn=(dt.clock&&dt.clock.displayValue)||"", who=(dt.athletesInvolved||[]).map(a=>a.displayName).join(", ");
+          if (t.includes("Yellow")&&s) yc[s]++;
+          if (t.includes("Red")&&s) rc[s]++;
+          if (t) eventos.push({tipo:t,min:mn,quien:who,lado:((s==="home")!==flip)?"local":"visitante"});
+        });
+        const pair=(h,a)=>flip?[a,h]:[h,a];
+        const hs=parseInt(home.score||0), as_=parseInt(away.score||0);
+        partidos[keyOf(m)] = {estado, marcador: flip?`${as_}-${hs}`:`${hs}-${as_}`,
+          reloj:(comp.status&&comp.status.displayClock)||"", detalle: stp.shortDetail||stp.detail||"",
+          stats:{posesion:pair(num(sh,"possessionPct"),num(sa,"possessionPct")),
+            disparos:pair(num(sh,"totalShots"),num(sa,"totalShots")),
+            a_puerta:pair(num(sh,"shotsOnTarget"),num(sa,"shotsOnTarget")),
+            esquinas:pair(num(sh,"wonCorners"),num(sa,"wonCorners")),
+            faltas:pair(num(sh,"foulsCommitted"),num(sa,"foulsCommitted")),
+            amarillas:pair(yc.home,yc.away), rojas:pair(rc.home,rc.away)},
+          eventos};
+      });
+    }catch(e){}
+  }
+  return Object.keys(partidos).length ? {actualizado:"espn", partidos} : null;
+}
+function mergeLive(base, extra){
+  if (!base && !extra) return null;
+  return {actualizado:(extra&&extra.actualizado)||"supabase",
+    partidos: Object.assign({}, base&&base.partidos, extra&&extra.partidos)};
 }
 
 async function load(){
   [MATCHES, TEAMS, GROUPS, META] = await Promise.all(
     ["matches","teams","groups","meta"].map(f=>fetch(`data/${f}.json`).then(r=>r.json())));
   [BETS, LIVE, TRACK] = await Promise.all(["bets","live","track"].map(tryFetch));
-  const liveSupa = await fetchLiveSupa(); if (liveSupa) LIVE = liveSupa;   // estado en vivo al instante
+  LIVE = mergeLive(LIVE, await fetchLiveSupa());        // estado guardado (todos los partidos)
+  LIVE = mergeLive(LIVE, await fetchEspnLive());        // stats REALES en vivo, directo de ESPN
   await initAuth();
   await loadVotos().catch(()=>{});
   computeNext();
   renderBadges(); renderPartidos(); renderApuestas(); renderGrupos();
   initBot(); initAnimaciones(); initPresence();
-  setInterval(refreshLive, 60000);
+  setInterval(refreshLive, 45000);
 }
 
 async function refreshLive(){
-  const nuevo = (await fetchLiveSupa()) || (await tryFetch("live"));
+  let nuevo = (await fetchLiveSupa()) || (await tryFetch("live"));
+  nuevo = mergeLive(nuevo, await fetchEspnLive());     // overlay de stats reales en vivo
   if (!nuevo) return;
   const cambio = JSON.stringify(nuevo) !== JSON.stringify(LIVE);
   LIVE = nuevo;
@@ -761,32 +862,47 @@ function statBar(label, a, b){
       <div class="ls-track"><div class="ls-a" style="width:${pa}%"></div><div class="ls-b" style="width:${100-pa}%"></div></div></div>
     <span class="ls-v r">${b}</span></div>`;
 }
-function liveStatsHTML(m, lv){
-  const e = m.extra; if (!e) return "";
-  const min = parseInt(String(lv.reloj||"").replace(/[^0-9]/g,"")) || 0;
-  const prog = Math.min(1, Math.max(0.06, min/90));        // proyecta lo esperado al minuto actual
-  const r1 = x => Math.round(x*prog), r10 = x => Math.round(x*prog*10)/10;
-  const tot = (e.disparos_local + e.disparos_visitante) || 1;
-  const posL = Math.round(e.disparos_local/tot*100);
-  const corTot = Math.round(e.esquinas_esperadas);
-  const corL = Math.round(corTot*e.disparos_local/tot), corV = Math.max(0, corTot - corL);
-  const tarL = e.tarjetas_esperadas/2, tarV = e.tarjetas_esperadas - tarL;
-  const [gl, gv] = (lv.marcador||"0-0").split("-");
+/* minuto que avanza en el cliente (el feed solo refresca cada ~30 min) */
+function minutoVivo(m, lv){
+  const est = (lv && lv.estado) || "";
+  if (est==="STATUS_FINAL") return "Final";
+  if (est==="STATUS_HALFTIME") return "Entretiempo";
+  if (m.hora_utc){
+    const elapsed = Math.floor((Date.now()-new Date(m.hora_utc))/60000);
+    if (elapsed>=0){
+      if (elapsed<=46) return Math.max(1,elapsed)+"'";
+      if (elapsed<61) return "Entretiempo";
+      const mm = elapsed-15;            // descuenta ~15 min de entretiempo
+      return mm>=90 ? "90'+" : mm+"'";
+    }
+  }
+  return (lv && lv.reloj) || "en juego";
+}
+function timelineHTML(lv){
+  if (!lv.eventos || !lv.eventos.length) return "";
+  const ic = t => t.includes("Red")?"🟥":t.includes("Yellow")?"🟨":t.includes("Goal")?"⚽":"🔁";
+  return `<div class="tl-title">📋 Goles y tarjetas</div><div class="timeline">`+
+    lv.eventos.map(ev=>`<div class="tl-row ${ev.lado==="visitante"?"v":"l"}">
+      <span class="tl-min">${ev.min}</span><span class="tl-ic">${ic(ev.tipo)}</span>
+      <span class="tl-who">${(ev.quien||"").replace(/</g,"&lt;")}</span></div>`).join("")+`</div>`;
+}
+function realStatsHTML(m, lv){
+  const s = lv.stats;
+  const hay = s && ["disparos","posesion","esquinas","faltas"].some(k=>s[k]&&(s[k][0]||s[k][1]));
+  const tl = timelineHTML(lv);
+  if (!hay && !tl) return "";
+  const bars = hay ? `
+    ${statBar("Posesión %", s.posesion[0], s.posesion[1])}
+    ${statBar("Disparos", s.disparos[0], s.disparos[1])}
+    ${statBar("A puerta", s.a_puerta[0], s.a_puerta[1])}
+    ${statBar("Esquinas", s.esquinas[0], s.esquinas[1])}
+    ${statBar("Faltas", s.faltas[0], s.faltas[1])}
+    ${statBar("🟨 Amarillas", s.amarillas[0], s.amarillas[1])}
+    ${(s.rojas[0]||s.rojas[1])?statBar("🟥 Rojas", s.rojas[0], s.rojas[1]):""}` : "";
   return `<div class="live-stats" onclick="event.stopPropagation()">
-    <div class="ls-score">
-      <span class="t">${flag(m.local,40)} ${nm(m.local)}</span>
-      <b>${gl} <span>-</span> ${gv}</b>
-      <span class="t r">${nm(m.visitante)} ${flag(m.visitante,40)}</span>
-    </div>
-    <div class="ls-min">● EN VIVO · ⏱ ${lv.reloj||"en juego"}${lv.detalle?(" · "+lv.detalle):""}</div>
-    <div class="ls-title" style="margin-top:12px">📊 Estadísticas del partido
-      <span>marcador y minuto EN VIVO del feed · el resto lo estima el modelo y se proyecta al minuto</span></div>
-    ${statBar("Posesión %", posL, 100-posL)}
-    ${statBar("Disparos", r1(e.disparos_local), r1(e.disparos_visitante))}
-    ${statBar("A puerta", r1(e.a_puerta_local), r1(e.a_puerta_visitante))}
-    ${statBar("Esquinas", r1(corL), r1(corV))}
-    ${statBar("🟨 Tarjetas", r1(tarL), r1(tarV))}
-    ${statBar("xG (goles esperados)", r10(m.xg_local), r10(m.xg_visitante))}
+    ${hay?`<div class="ls-title">📊 Estadísticas del partido <span>datos reales de ESPN</span></div>`:""}
+    ${bars}
+    ${tl}
   </div>`;
 }
 
@@ -798,7 +914,7 @@ function matchCard(m, idx){
   const lv = liveInfo(m.fecha, m.local, m.visitante);
   const resultado = m.resultado || (lv && lv.final ? lv.marcador : null);
   const estadoPill = lv && lv.enVivo
-    ? `<span class="livepill">● EN VIVO ${lv.reloj||""} · ${lv.marcador}</span>`
+    ? `<span class="livepill">● EN VIVO ${minutoVivo(m,lv)} · ${lv.marcador}</span>`
     : resultado
       ? `<span class="donepill">FINAL ${resultado}</span>`
       : `<span class="pickpill">⚡ ${pickTxt} · ${pct(m.pick_prob)}</span>`;
@@ -818,11 +934,11 @@ function matchCard(m, idx){
     ${lv&&lv.enVivo?`
     <div class="live-board" onclick="event.stopPropagation()">
       <div class="lb-score">${(lv.marcador||"0-0").replace("-"," · ")}</div>
-      <div class="lb-clock">⏱ ${lv.reloj||"en juego"} ${lv.detalle?("· "+lv.detalle):""}</div>
-      <div class="lb-sub">Marcador en vivo · se actualiza solo · vota abajo quién gana 👇</div>
+      <div class="lb-clock"><span class="js-min" data-ko="${m.hora_utc||""}" data-estado="${lv.estado||""}">${minutoVivo(m,lv)}</span>${lv.detalle?(" · "+lv.detalle):""}</div>
+      <div class="lb-sub">En vivo · estadísticas reales de ESPN · vota abajo quién gana 👇</div>
     </div>
     ${pitchHTML(m, lv)}
-    ${liveStatsHTML(m, lv)}`:""}
+    ${realStatsHTML(m, lv)}`:""}
     <div class="probbar">
       <div class="p-h" style="width:${m.p_local*100}%">${pct(m.p_local)}</div>
       <div class="p-d" style="width:${m.p_empate*100}%">${pct(m.p_empate)}</div>
@@ -830,7 +946,7 @@ function matchCard(m, idx){
     </div>
     <div class="bar-names"><span>${nm(m.local)}</span><span>Empate</span><span>${nm(m.visitante)}</span></div>
     <div class="m-detail">
-      ${!(lv&&lv.enVivo)?pitchHTML(m, null):""}
+      ${(resultado && lv && lv.stats)?realStatsHTML(m, lv):(!(lv&&lv.enVivo)?pitchHTML(m, null):"")}
       <div class="det-grid">
         <div class="det-box"><div class="k">+2.5 goles</div><div class="v">${pct(m.p_over25)} <small>· cuota justa ${m.cuota_justa_over25||"–"}</small></div></div>
         <div class="det-box"><div class="k">Ambos anotan</div><div class="v">${pct(m.p_btts)}</div></div>
