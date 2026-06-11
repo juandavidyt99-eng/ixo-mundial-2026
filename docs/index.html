@@ -11,7 +11,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Sora:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
@@ -358,9 +357,14 @@ footer a{color:var(--muted)}
 .extra-box .v{font-family:'Sora';font-weight:800;font-size:.95rem;margin-top:2px;color:var(--blue)}
 .extra-box .s{font-size:.64rem;color:var(--muted)}
 
-/* ---------- COPA 3D ---------- */
-#trofeo3d{width:170px;height:200px;margin:0 auto;filter:drop-shadow(0 18px 40px rgba(255,201,77,.35))}
-#trofeo3d canvas{display:block}
+/* ---------- COPA (SVG) ---------- */
+#copa{display:block;margin:0 auto;filter:drop-shadow(0 14px 26px rgba(255,201,77,.4))}
+#copa .destello{transform-origin:center;animation:girar 6s linear infinite}
+@keyframes girar{to{transform:rotate(360deg)}}
+.cup{position:relative}
+.cup::after{content:"";position:absolute;left:50%;top:46%;width:180px;height:180px;
+  transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;z-index:-1;
+  background:radial-gradient(circle,rgba(255,201,77,.28),transparent 65%)}
 
 /* ---------- VOTACION COMUNIDAD ---------- */
 .voto{margin-top:14px;background:var(--bg-soft);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
@@ -381,6 +385,35 @@ footer a{color:var(--muted)}
 .live-board .lb-score{font-family:'Unbounded';font-size:2.4rem;font-weight:900;color:#fff;letter-spacing:2px}
 .live-board .lb-clock{color:#ff9090;font-weight:800;font-size:.95rem;margin-top:4px;animation:pulse 1.5s infinite}
 .live-board .lb-sub{color:var(--dim);font-size:.7rem;margin-top:6px}
+
+/* ---------- CANCHA + STATS EN VIVO + CHIP HORA ---------- */
+.kchip{font-size:.72rem;font-weight:700;border-radius:999px;padding:2px 9px;
+  background:rgba(86,168,255,.12);border:1px solid rgba(86,168,255,.4);color:var(--blue)}
+.kchip.pronto{background:rgba(255,201,77,.14);border-color:rgba(255,201,77,.5);color:var(--gold);animation:pulse 1.6s infinite}
+.pitch-wrap{margin:14px 0 4px;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.pitch{width:100%;height:auto;display:block}
+.live-stats{background:var(--bg-soft);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:12px 0 4px}
+.ls-title{font-size:.8rem;color:var(--txt);font-weight:700;margin-bottom:12px;display:flex;flex-direction:column;gap:2px}
+.ls-title span{font-size:.64rem;color:var(--dim);font-weight:500}
+.ls-row{display:grid;grid-template-columns:46px 1fr 46px;align-items:center;gap:8px;margin-bottom:10px}
+.ls-row:last-child{margin-bottom:0}
+.ls-v{font-family:'Sora';font-weight:800;font-size:.84rem;color:var(--green)}
+.ls-v.r{text-align:right;color:var(--blue)}
+.ls-k{font-size:.66rem;color:var(--muted);text-align:center;margin-bottom:4px}
+.ls-track{display:flex;height:7px;border-radius:5px;overflow:hidden;background:var(--card)}
+.ls-a{background:linear-gradient(90deg,#0e8f57,#19b873)}
+.ls-b{background:linear-gradient(90deg,#2c62ad,#3e7fd6)}
+
+/* ---------- MERCADOS + TICKETS MULTIPLES (Apuestas) ---------- */
+.mk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:4px 0 12px}
+.mk-box{background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.mk-box .k{font-size:.62rem;color:var(--dim);text-transform:uppercase;letter-spacing:.6px}
+.mk-box .v{font-family:'Sora';font-weight:800;font-size:.92rem;margin-top:2px;color:var(--txt)}
+.mk-box .s{font-size:.64rem;color:var(--muted);margin-top:1px}
+.tickets-row{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px}
+.tickets-row .ticket{margin-top:0;flex:1;min-width:260px;max-width:340px}
+.ticket .th.t-seg{background:#14532d}.ticket .th.t-eq{background:#1e3a5f}.ticket .th.t-ar{background:#5a2d14}
+.bet-sub{font-size:.82rem;color:var(--gold);font-weight:700;margin:14px 0 8px;display:flex;align-items:center;gap:8px}
 
 /* ---------- PRESENCIA + CHAT MEDIA ---------- */
 .online-pill{display:inline-flex;align-items:center;gap:7px;background:rgba(16,225,135,.1);
@@ -417,7 +450,36 @@ footer a{color:var(--muted)}
 <div class="wrap">
 
   <header class="hero">
-    <div class="cup" id="trofeo"><div id="trofeo3d" aria-label="Copa del Mundo en 3D"></div></div>
+    <div class="cup" id="trofeo">
+      <svg id="copa" viewBox="0 0 120 152" width="148" height="188" aria-label="Trofeo del Mundial">
+        <defs>
+          <linearGradient id="oro" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#fff3bf"/><stop offset=".38" stop-color="#ffcf5a"/>
+            <stop offset=".7" stop-color="#e89b1c"/><stop offset="1" stop-color="#a96c0c"/>
+          </linearGradient>
+          <radialGradient id="shine" cx=".4" cy=".3" r=".7">
+            <stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <!-- base -->
+        <rect x="40" y="142" width="40" height="8" rx="3" fill="url(#oro)"/>
+        <path d="M46 142 L74 142 L70 128 L50 128 Z" fill="url(#oro)"/>
+        <rect x="55" y="100" width="10" height="30" rx="2" fill="url(#oro)"/>
+        <!-- asas -->
+        <path d="M34 50 C12 50 14 86 36 78" fill="none" stroke="url(#oro)" stroke-width="6" stroke-linecap="round"/>
+        <path d="M86 50 C108 50 106 86 84 78" fill="none" stroke="url(#oro)" stroke-width="6" stroke-linecap="round"/>
+        <!-- copa -->
+        <path d="M30 40 C30 86 44 104 60 104 C76 104 90 86 90 40 Z" fill="url(#oro)"/>
+        <ellipse cx="60" cy="40" rx="31" ry="8" fill="#ffe39a"/>
+        <ellipse cx="60" cy="40" rx="31" ry="8" fill="none" stroke="#b8770f" stroke-width="1.4"/>
+        <!-- brillo -->
+        <path d="M40 44 C40 78 49 96 58 98 C50 92 46 70 46 46 Z" fill="url(#shine)" opacity=".7"/>
+        <!-- estrella destello -->
+        <g class="destello" transform="translate(60 60)">
+          <path d="M0 -9 L2.4 -2.4 L9 0 L2.4 2.4 L0 9 L-2.4 2.4 L-9 0 L-2.4 -2.4 Z" fill="#fff8e0" opacity=".9"/>
+        </g>
+      </svg>
+    </div>
     <h1>IXO <span class="grad">Mundial 2026</span></h1>
     <p class="sub">Probabilidades calibradas para los 104 partidos de la Copa del Mundo.
     No es intuición: es un modelo estadístico validado con torneos reales.</p>
@@ -522,20 +584,37 @@ function fmtL(d){const[y,m,dd]=d.split("-").map(Number);const dt=new Date(Date.U
 function fmtS(d){const[,m,dd]=d.split("-").map(Number);return `${dd} ${MES[m-1]}`;}
 const hoyStr = () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`; };
 
-/* ============ cuenta regresiva ============ */
-const KICKOFF = new Date("2026-06-11T19:00:00-05:00");
+/* ============ cuenta regresiva (al próximo partido real) ============ */
+let NEXTKO = new Date("2026-06-11T19:00:00Z");   // inaugural: 13:00 CDMX = 19:00 UTC = 2:00 pm Colombia
+let NEXTLBL = `partido inaugural · ${flag("Mexico",20)} México vs Sudáfrica ${flag("South Africa",20)} · Estadio Azteca`;
+let NEXTLIVE = false;
+function computeNext(){
+  if (!MATCHES.length) return;
+  const now = new Date();
+  const conHora = MATCHES.filter(m=>m.hora_utc && !m.resultado);
+  const live = conHora.find(m=>{ const lv=liveInfo(m.fecha,m.local,m.visitante); return lv&&lv.enVivo; });
+  const prox = conHora.filter(m=>new Date(m.hora_utc)>now)
+    .sort((a,b)=>new Date(a.hora_utc)-new Date(b.hora_utc))[0];
+  const m = live || prox;
+  if (!m) return;
+  NEXTLIVE = !!live;
+  NEXTKO = new Date(m.hora_utc);
+  NEXTLBL = `${live?"🔴 EN VIVO · ":"próximo · "}${flag(m.local,20)} ${nm(m.local)} vs ${nm(m.visitante)} ${flag(m.visitante,20)} · ${m.ciudad}`;
+}
 function tickCountdown(){
   const el = document.getElementById("countdown");
-  const diff = KICKOFF - new Date();
-  if (diff <= 0){
+  if (!el) return;
+  const diff = NEXTKO - new Date();
+  if (NEXTLIVE || diff <= 0){
     el.innerHTML = `<div class="chip" style="font-size:.95rem;padding:10px 22px">
-      <span class="dot"></span><b>¡El Mundial está en juego!</b>&nbsp;Predicciones actualizadas cada jornada</div>`;
+      <span class="dot"></span><b>¡Partido en juego!</b>&nbsp;<span style="display:inline-flex;gap:5px;align-items:center">${NEXTLBL}</span></div>`;
     return;
   }
   const d=Math.floor(diff/864e5), h=Math.floor(diff/36e5)%24, m=Math.floor(diff/6e4)%60, s=Math.floor(diff/1e3)%60;
-  el.innerHTML = [["Días",d],["Horas",h],["Min",m],["Seg",s]].map(([l,n])=>
+  const cajas = d>0?[["Días",d],["Horas",h],["Min",m],["Seg",s]]:[["Horas",h],["Min",m],["Seg",s]];
+  el.innerHTML = cajas.map(([l,n])=>
     `<div class="cd-box"><div class="n">${String(n).padStart(2,"0")}</div><div class="l">${l}</div></div>`).join("")
-    + `<div class="cd-label">para el partido inaugural · ${flag("Mexico",20)} México vs Sudáfrica ${flag("South Africa",20)} · Estadio Azteca</div>`;
+    + `<div class="cd-label">${NEXTLBL}</div>`;
 }
 setInterval(tickCountdown, 1000); tickCountdown();
 
@@ -568,6 +647,7 @@ async function load(){
   [BETS, LIVE, TRACK] = await Promise.all(["bets","live","track"].map(tryFetch));
   await initAuth();
   await loadVotos().catch(()=>{});
+  computeNext();
   renderBadges(); renderPartidos(); renderApuestas(); renderGrupos();
   initBot(); initAnimaciones(); initPresence();
   setInterval(refreshLive, 60000);
@@ -578,6 +658,7 @@ async function refreshLive(){
   if (!nuevo) return;
   const cambio = JSON.stringify(nuevo) !== JSON.stringify(LIVE);
   LIVE = nuevo;
+  computeNext();
   if (cambio){
     const activa = document.querySelector(".section.active").id;
     if (activa === "partidos") renderPartidos();
@@ -601,8 +682,78 @@ function renderBadges(){
     <span class="chip">🕐 Actualizado <b>${META.generado.slice(0,10)}</b></span>`;
 }
 
+/* ============ hora de inicio por partido ============ */
+function horaPartido(m){
+  if (!m.hora_utc) return null;
+  const ko = new Date(m.hora_utc), diff = ko - new Date();
+  const hCol = ko.toLocaleTimeString("es-CO",{hour:"2-digit",minute:"2-digit",hour12:true,timeZone:"America/Bogota"});
+  if (diff > 0 && diff <= 6*3600e3){
+    const h = Math.floor(diff/3600e3), mn = Math.floor(diff/60e3)%60;
+    return {pronto:true, hora:hCol, txt: h>0?`Comienza en ${h} h ${String(mn).padStart(2,"0")} min`:`Comienza en ${mn} min`};
+  }
+  return {pronto:false, hora:hCol, txt:hCol};
+}
+
+/* ============ cancha (SVG) ============ */
+function pitchHTML(m, lv){
+  const enVivo = lv && lv.enVivo;
+  const sc = enVivo ? (lv.marcador||"0-0") : null;
+  const gid = ("g" + m.fecha + m.local + m.visitante).replace(/[^a-z0-9]/gi,"");
+  return `
+  <div class="pitch-wrap" onclick="event.stopPropagation()">
+    <svg class="pitch" viewBox="0 0 300 180" preserveAspectRatio="xMidYMid meet">
+      <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0f7e47"/><stop offset="1" stop-color="#0a5832"/></linearGradient></defs>
+      <rect width="300" height="180" rx="10" fill="url(#${gid})"/>
+      ${[0,1,2,3,4,5].map(i=>`<rect x="${i*50}" y="0" width="50" height="180" fill="#fff" opacity="${i%2?.05:0}"/>`).join("")}
+      <rect x="8" y="8" width="284" height="164" rx="4" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="2"/>
+      <line x1="150" y1="8" x2="150" y2="172" stroke="#fff" stroke-opacity=".5" stroke-width="2"/>
+      <circle cx="150" cy="90" r="26" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="2"/>
+      <circle cx="150" cy="90" r="2.5" fill="#fff" opacity=".7"/>
+      <rect x="8" y="56" width="32" height="68" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2"/>
+      <rect x="260" y="56" width="32" height="68" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2"/>
+      <text x="18" y="26" fill="#fff" font-size="11" font-weight="700" opacity=".92">${nm(m.local)}</text>
+      <text x="282" y="26" fill="#fff" font-size="11" font-weight="700" text-anchor="end" opacity=".92">${nm(m.visitante)}</text>
+      ${enVivo?`
+        <text x="150" y="88" fill="#fff" font-size="32" font-weight="900" text-anchor="middle" font-family="Unbounded">${sc.replace("-"," - ")}</text>
+        <text x="150" y="110" fill="#ffd34d" font-size="11" font-weight="800" text-anchor="middle">⏱ ${lv.reloj||"en juego"}</text>
+        <circle cx="60" cy="150" r="4" fill="#fff"><animate attributeName="cx" values="60;150;240;150;60" dur="6s" repeatCount="indefinite"/>
+          <animate attributeName="cy" values="150;60;150;120;150" dur="6s" repeatCount="indefinite"/></circle>`
+      :`<text x="150" y="96" fill="#fff" font-size="13" font-weight="800" text-anchor="middle" opacity=".8">VS</text>`}
+    </svg>
+  </div>`;
+}
+
+/* ============ estadísticas en vivo ============ */
+function statBar(label, a, b){
+  const total = (a + b) || 1, pa = Math.round(a/total*100);
+  return `<div class="ls-row">
+    <span class="ls-v">${a}</span>
+    <div><div class="ls-k">${label}</div>
+      <div class="ls-track"><div class="ls-a" style="width:${pa}%"></div><div class="ls-b" style="width:${100-pa}%"></div></div></div>
+    <span class="ls-v r">${b}</span></div>`;
+}
+function liveStatsHTML(m, lv){
+  const e = m.extra; if (!e) return "";
+  const tot = (e.disparos_local + e.disparos_visitante) || 1;
+  const posL = Math.round(e.disparos_local/tot*100);
+  const corL = Math.round(e.esquinas_esperadas * e.disparos_local/tot), corV = Math.max(0, Math.round(e.esquinas_esperadas) - corL);
+  const tarL = Math.round(e.tarjetas_esperadas/2*10)/10, tarV = Math.round((e.tarjetas_esperadas - tarL)*10)/10;
+  return `<div class="live-stats" onclick="event.stopPropagation()">
+    <div class="ls-title">📊 Estadísticas del partido
+      <span>marcador y minuto EN VIVO desde el feed · detalle estimado por el modelo</span></div>
+    ${statBar("Posesión %", posL, 100-posL)}
+    ${statBar("Disparos", e.disparos_local, e.disparos_visitante)}
+    ${statBar("A puerta", e.a_puerta_local, e.a_puerta_visitante)}
+    ${statBar("Esquinas", corL, corV)}
+    ${statBar("Tarjetas", tarL, tarV)}
+    ${statBar("xG (goles esperados)", m.xg_local, m.xg_visitante)}
+  </div>`;
+}
+
 /* ============ PARTIDOS ============ */
 function matchCard(m, idx){
+  const hp = horaPartido(m);
   const pickTxt = m.pick==="home" ? `Gana ${nm(m.local)}` : m.pick==="away" ? `Gana ${nm(m.visitante)}` : "Empate";
   const cuotaPick = m.pick==="home"?m.cuota_justa_local:m.pick==="away"?m.cuota_justa_visitante:m.cuota_justa_empate;
   const lv = liveInfo(m.fecha, m.local, m.visitante);
@@ -616,7 +767,8 @@ function matchCard(m, idx){
   return `
   <div class="match ${lv&&lv.enVivo?"live":""}" data-i="${idx}" onclick="this.classList.toggle('open')">
     <div class="m-head">
-      <div class="m-meta"><span class="g">Grupo ${m.grupo}</span><span>📍 ${m.ciudad}</span></div>
+      <div class="m-meta"><span class="g">Grupo ${m.grupo}</span><span>📍 ${m.ciudad}</span>
+        ${hp?`<span class="kchip ${hp.pronto?"pronto":""}">${hp.pronto?"⏳ "+hp.txt:"🕐 "+hp.hora+" Col"}</span>`:""}</div>
       ${estadoPill}
     </div>
     <div class="m-teams">
@@ -629,7 +781,9 @@ function matchCard(m, idx){
       <div class="lb-score">${(lv.marcador||"0-0").replace("-"," · ")}</div>
       <div class="lb-clock">⏱ ${lv.reloj||"en juego"} ${lv.detalle?("· "+lv.detalle):""}</div>
       <div class="lb-sub">Marcador en vivo · se actualiza solo · vota abajo quién gana 👇</div>
-    </div>`:""}
+    </div>
+    ${pitchHTML(m, lv)}
+    ${liveStatsHTML(m, lv)}`:""}
     <div class="probbar">
       <div class="p-h" style="width:${m.p_local*100}%">${pct(m.p_local)}</div>
       <div class="p-d" style="width:${m.p_empate*100}%">${pct(m.p_empate)}</div>
@@ -637,6 +791,7 @@ function matchCard(m, idx){
     </div>
     <div class="bar-names"><span>${nm(m.local)}</span><span>Empate</span><span>${nm(m.visitante)}</span></div>
     <div class="m-detail">
+      ${!(lv&&lv.enVivo)?pitchHTML(m, null):""}
       <div class="det-grid">
         <div class="det-box"><div class="k">+2.5 goles</div><div class="v">${pct(m.p_over25)} <small>· cuota justa ${m.cuota_justa_over25||"–"}</small></div></div>
         <div class="det-box"><div class="k">Ambos anotan</div><div class="v">${pct(m.p_btts)}</div></div>
@@ -789,15 +944,21 @@ function renderApuestas(){
       const k = keyOf(m);
       const b = BETS && BETS.por_partido && BETS.por_partido[k];
       const lv = liveInfo(m.fecha, m.local, m.visitante);
+      const hp = horaPartido(m);
       html += `
       <div class="bet-match">
         <div class="bm-head">
           ${flag(m.local,40)}<span class="t">${nm(m.local)} vs ${nm(m.visitante)}</span>${flag(m.visitante,40)}
-          ${lv&&lv.enVivo?`<span class="livepill">● EN VIVO ${lv.reloj||""} · ${lv.marcador}</span>`:""}
-          <span class="meta">${b?b.casas+" casas consultadas":"las casas aún no publican cuotas"}</span>
+          ${lv&&lv.enVivo?`<span class="livepill">● EN VIVO ${lv.reloj||""} · ${lv.marcador}</span>`
+            :hp?`<span class="kchip ${hp.pronto?"pronto":""}">${hp.pronto?"⏳ "+hp.txt:"🕐 "+hp.hora+" Col"}</span>`:""}
+          <span class="meta">${b?b.casas+" casas consultadas":"cuotas de casas: pendientes"}</span>
         </div>
-        ${b?b.apuestas.map(betRow).join(""):""}
-        ${ticketHTML(m)}
+        <div class="bet-sub">📊 Todos los mercados del partido</div>
+        ${marketsGridHTML(m)}
+        ${b?`<div class="bet-sub">💵 Mejores cuotas reales de las casas (1.30–1.70)</div>${b.apuestas.map(betRow).join("")}`
+          :`<p style="color:var(--dim);font-size:.78rem;margin:2px 0 8px">Las casas aún no publican cuotas para este partido — abajo tienes los tickets del modelo.</p>`}
+        <div class="bet-sub">🎟️ Tickets combinados recomendados</div>
+        <div class="tickets-row">${construirTickets(m).map(t=>ticketCardHTML(m,t)).join("")}</div>
       </div>`;
     });
   });
@@ -1204,6 +1365,72 @@ function ticketHTML(m){
   </div>`;
 }
 
+/* ============ TODOS LOS MERCADOS (Apuestas) ============ */
+function marketsGridHTML(m){
+  const e = m.extra || {};
+  const cells = [
+    ["Resultado 1X2", `${pct(m.p_local)} · ${pct(m.p_empate)} · ${pct(m.p_visitante)}`,
+      `cuota ${m.cuota_justa_local||"–"}/${m.cuota_justa_empate||"–"}/${m.cuota_justa_visitante||"–"}`],
+    ["+2.5 goles", pct(m.p_over25), `cuota justa ${m.cuota_justa_over25||"–"}`],
+    ["Ambos anotan", pct(m.p_btts), `No: ${pct(1-m.p_btts)}`],
+    ["+1.5 / +3.5 goles", e.p_over15!=null?`${pct(e.p_over15)} / ${pct(e.p_over35)}`:"–", "probabilidad modelo"],
+    ["Doble oportunidad", e.p_1x!=null?pct(Math.max(e.p_1x,e.p_x2)):"–",
+      e.p_1x!=null?(e.p_1x>=e.p_x2?nm(m.local)+" o empate":nm(m.visitante)+" o empate"):""],
+    ["🚩 Esquinas", e.esquinas_esperadas??"–",
+      e.esquinas_linea!=null?`${e.p_esquinas_over>=.5?"Más":"Menos"} de ${e.esquinas_linea}: ${pct(Math.max(e.p_esquinas_over,1-e.p_esquinas_over))}`:""],
+    ["🟨 Tarjetas", e.tarjetas_esperadas??"–",
+      e.tarjetas_linea!=null?`${e.p_tarjetas_over>=.5?"Más":"Menos"} de ${e.tarjetas_linea}: ${pct(Math.max(e.p_tarjetas_over,1-e.p_tarjetas_over))}`:""],
+    ["🎯 Disparos", e.disparos_local!=null?`${e.disparos_local} – ${e.disparos_visitante}`:"–",
+      e.a_puerta_local!=null?`a puerta ${e.a_puerta_local} – ${e.a_puerta_visitante}`:""],
+  ];
+  return `<div class="mk-grid">${cells.map(([k,v,s])=>
+    `<div class="mk-box"><div class="k">${k}</div><div class="v">${v}</div>${s?`<div class="s">${s}</div>`:""}</div>`).join("")}</div>`;
+}
+
+/* ============ TICKETS COMBINADOS MULTIPLES ============ */
+function fairOdd(p){ return p>0 ? +(1/p).toFixed(2) : 99; }
+function construirTickets(m){
+  const e = m.extra || {};
+  const pickTxt = m.pick==="home"?`Gana ${nm(m.local)}`:m.pick==="away"?`Gana ${nm(m.visitante)}`:"Empate";
+  const cuotaPick = m.pick==="home"?m.cuota_justa_local:m.pick==="away"?m.cuota_justa_visitante:m.cuota_justa_empate;
+  const dobleP = e.p_1x>=e.p_x2 ? e.p_1x : e.p_x2;
+  const dobleSel = e.p_1x>=e.p_x2 ? nm(m.local)+" o empate" : nm(m.visitante)+" o empate";
+  const doble  = {mercado:"Doble oportunidad", seleccion:dobleSel, p:dobleP, cuota_justa:fairOdd(dobleP)};
+  const over15 = {mercado:"Goles", seleccion:"Más de 1.5 goles", p:e.p_over15, cuota_justa:fairOdd(e.p_over15)};
+  const over25 = {mercado:"Goles", seleccion:"Más de 2.5 goles", p:m.p_over25, cuota_justa:m.cuota_justa_over25||fairOdd(m.p_over25)};
+  const result = {mercado:"Resultado final", seleccion:pickTxt, p:m.pick_prob, cuota_justa:cuotaPick};
+  const bttsSi = {mercado:"Ambos anotan", seleccion:"Sí", p:m.p_btts, cuota_justa:fairOdd(m.p_btts)};
+  const bttsNo = {mercado:"Ambos anotan", seleccion:"No", p:1-m.p_btts, cuota_justa:fairOdd(1-m.p_btts)};
+  const corP = e.esquinas_linea!=null ? Math.max(e.p_esquinas_over,1-e.p_esquinas_over) : 0;
+  const corner = e.esquinas_linea!=null ? {mercado:"Esquinas",
+    seleccion:(e.p_esquinas_over>=.5?"Más":"Menos")+" de "+e.esquinas_linea, p:corP, cuota_justa:fairOdd(corP)} : null;
+
+  const arma = (nombre, clase, legs) => {
+    legs = legs.filter(x=>x && x.p>0 && x.cuota_justa);
+    if (legs.length < 2) return null;
+    return {nombre, clase, selecciones:legs,
+      p_combinada: legs.reduce((a,x)=>a*x.p,1),
+      cuota_combinada: +legs.reduce((a,x)=>a*x.cuota_justa,1).toFixed(2)};
+  };
+  return [
+    arma("SEGURA","t-seg",[doble, over15]),
+    arma("EQUILIBRADA","t-eq",[result, (m.p_btts>=.5?bttsSi:bttsNo), over15]),
+    arma("ARRIESGADA","t-ar",[result, over25, corner||bttsSi]),
+  ].filter(Boolean);
+}
+function ticketCardHTML(m, t){
+  return `
+  <div class="ticket" onclick="event.stopPropagation()">
+    <div class="th ${t.clase}"><span>🎟️ ${t.nombre}</span><span style="font-size:.64rem">IXO MODELO</span></div>
+    <div class="tb">
+      <div style="font-family:'Inter';font-size:.7rem;color:#6b6450;margin-bottom:6px">${nm(m.local)} vs ${nm(m.visitante)} · ${fmtS(m.fecha)}</div>
+      ${t.selecciones.map(s=>`<div class="sel"><span>${s.mercado}<br><b>${s.seleccion}</b></span><span class="cu">${pct(s.p)}<br>@${s.cuota_justa}</span></div>`).join("")}
+    </div>
+    <div class="tf"><span style="font-size:.72rem">CUOTA COMBINADA</span><span class="total">${t.cuota_combinada}</span></div>
+    <div class="legal">Prob. de acertar todo: ${pct(t.p_combinada)} · cuotas justas del modelo · esquinas/tarjetas/disparos estimados del xG · +18</div>
+  </div>`;
+}
+
 /* ============ VOTACION POR PARTIDO ============ */
 let VOTOS = {};   // match_key -> {local, empate, visitante}
 const voterId = () => {
@@ -1334,7 +1561,7 @@ async function toggleAudio(btn){
 /* ============ animaciones (GSAP) ============ */
 function initAnimaciones(){
   if (typeof gsap === "undefined") return;
-  gsap.to("#trofeo3d", {y:-10, duration:1.9, yoyo:true, repeat:-1, ease:"sine.inOut"});
+  gsap.to("#copa", {y:-9, duration:2.2, yoyo:true, repeat:-1, ease:"sine.inOut"});
   gsap.from(".cd-box", {y:18, opacity:0, stagger:.08, duration:.6, ease:"back.out(1.6)"});
 }
 
@@ -1355,102 +1582,5 @@ load().catch(e=>{
 });
 </script>
 
-<script type="module">
-/* Copa 3D: oro fisico renderizado en tiempo real (Three.js) */
-try {
-  const THREE = await import("three");
-  const { RoomEnvironment } = await import("three/addons/environments/RoomEnvironment.js");
-
-  const cont = document.getElementById("trofeo3d");
-  const W = 170, H = 200;
-  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
-  renderer.setSize(W, H);
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.15;
-  cont.appendChild(renderer.domElement);
-
-  const scene = new THREE.Scene();
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-
-  const cam = new THREE.PerspectiveCamera(33, W/H, 0.1, 100);
-  cam.position.set(0, 1.1, 7.2);
-  cam.lookAt(0, 0.9, 0);
-
-  const oro = new THREE.MeshPhysicalMaterial({
-    color: 0xffc14a, metalness: 1, roughness: 0.16,
-    clearcoat: 0.6, clearcoatRoughness: 0.25, envMapIntensity: 1.5,
-  });
-  const malaquita = new THREE.MeshPhysicalMaterial({
-    color: 0x0d4a32, metalness: 0.15, roughness: 0.32,
-    clearcoat: 0.9, clearcoatRoughness: 0.15, envMapIntensity: 0.9,
-  });
-
-  const grupo = new THREE.Group();
-
-  // silueta torneada inspirada en un trofeo clasico: base ancha, dos anillos, columna que se abre
-  const perfil = [
-    [0.00, 0.00],[1.05, 0.00],[1.05, 0.16],[0.92, 0.20],[0.92, 0.34],[0.78, 0.38],
-    [0.62, 0.45],[0.48, 0.55],[0.36, 0.72],[0.30, 0.95],[0.33, 1.18],[0.42, 1.36],
-    [0.36, 1.50],[0.28, 1.66],[0.26, 1.86],[0.32, 2.06],[0.46, 2.24],[0.62, 2.38],
-    [0.70, 2.50],[0.62, 2.58],[0.42, 2.62],[0.20, 2.64],[0.00, 2.65],
-  ].map(([x,y]) => new THREE.Vector2(x, y));
-  const cuerpo = new THREE.Mesh(new THREE.LatheGeometry(perfil, 96), oro);
-  grupo.add(cuerpo);
-
-  // globo terraqueo dorado en la cima
-  const globo = new THREE.Mesh(new THREE.SphereGeometry(0.78, 64, 48), oro);
-  globo.position.y = 3.28;
-  grupo.add(globo);
-
-  // meridianos sutiles (continentes estilizados)
-  const lineasMat = new THREE.MeshPhysicalMaterial({
-    color: 0xb8860b, metalness: 1, roughness: 0.45, envMapIntensity: 1.0,
-  });
-  for (let i = 0; i < 3; i++){
-    const anillo = new THREE.Mesh(new THREE.TorusGeometry(0.785, 0.012, 8, 80), lineasMat);
-    anillo.position.y = 3.28;
-    anillo.rotation.x = Math.PI/2;
-    anillo.rotation.y = i * Math.PI/3;
-    anillo.rotation.z = i * 0.5;
-    grupo.add(anillo);
-  }
-
-  // doble base de malaquita verde (como el trofeo real)
-  const base1 = new THREE.Mesh(new THREE.CylinderGeometry(1.06, 1.12, 0.22, 64), malaquita);
-  base1.position.y = -0.11;
-  const base2 = new THREE.Mesh(new THREE.CylinderGeometry(1.18, 1.24, 0.2, 64), malaquita);
-  base2.position.y = -0.32;
-  grupo.add(base1, base2);
-
-  // dos bandas doradas en la base
-  for (const y of [-0.11, -0.32]){
-    const banda = new THREE.Mesh(new THREE.TorusGeometry(y===-0.11?1.09:1.21, 0.02, 8, 80), oro);
-    banda.rotation.x = Math.PI/2;
-    banda.position.y = y + 0.1;
-    grupo.add(banda);
-  }
-
-  grupo.position.y = -1.35;
-  grupo.scale.setScalar(0.95);
-  scene.add(grupo);
-
-  const luz = new THREE.SpotLight(0xfff2cc, 60, 30, 0.5, 0.6);
-  luz.position.set(3, 7, 5);
-  scene.add(luz);
-
-  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  function animar(t){
-    if (!reduceMotion) grupo.rotation.y = t * 0.0005;
-    renderer.render(scene, cam);
-    requestAnimationFrame(animar);
-  }
-  requestAnimationFrame(animar);
-} catch (e) {
-  const c = document.getElementById("trofeo3d");
-  if (c) c.innerHTML = '<div style="font-size:4.5rem;line-height:200px">🏆</div>';
-}
-</script>
 </body>
 </html>
